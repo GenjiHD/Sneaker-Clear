@@ -16,3 +16,6 @@ bin/
 
 # Tauri / Rust
 frontend/src-tauri/target/
+
+# NixOS
+.nix

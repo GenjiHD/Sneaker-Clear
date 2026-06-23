@@ -33,9 +33,22 @@
 
         <div class="ticket-acciones">
           <button @click="abrirEditor(orden)" class="btn-accion">✏️ Editar</button>
+          <button @click="verTicketPDF(orden.id)" class="btn-accion btn-ticket">🖨️ Ticket</button>
           <button @click="eliminarOrden(orden.id)" class="btn-accion btn-entregar">🗑️ Entregar</button>
         </div>
 
+      </div>
+    </div>
+
+    <div v-if="mostrarModalTicket" class="modal-pdf-overlay" @click.self="cerrarModalTicket">
+      <div class="modal-pdf-contenido">
+        <div class="modal-pdf-header">
+          <h3>Vista Previa del Ticket</h3>
+          <button @click="cerrarModalTicket" class="btn-cerrar-modal">❌ Cerrar</button>
+        </div>
+        <div class="modal-pdf-cuerpo">
+          <iframe :src="urlTicketPDF" class="visor-pdf"></iframe>
+        </div>
       </div>
     </div>
 
@@ -67,6 +80,10 @@ const estadoModal = ref(false)
 const ordenSeleccionada = ref(null)
 const mostrarModalReporte = ref(false)
 
+// Estados para el Modal del PDF
+const mostrarModalTicket = ref(false)
+const urlTicketPDF = ref('')
+
 const obtenerOrdenes = async () => {
   try {
     const respuesta = await fetch(`${urlAPI}/servicios/obtener`)
@@ -94,6 +111,17 @@ const ordenesEnProceso = computed(() => {
 const abrirEditor = (orden) => {
   ordenSeleccionada.value = orden  
   estadoModal.value = true         
+}
+
+// Función para abrir el modal y setear la URL del PDF generado por Go
+const verTicketPDF = (id) => {
+  urlTicketPDF.value = `${urlAPI}/servicios/ticket?id=${id}`
+  mostrarModalTicket.value = true
+}
+
+const cerrarModalTicket = () => {
+  mostrarModalTicket.value = false
+  urlTicketPDF.value = ''
 }
 
 const eliminarOrden = async (id) => {
@@ -130,7 +158,6 @@ onMounted(() => {
 
 <style scoped>
 .contenedor-principal-ordenes {
-  /* Ensancho el contenedor máximo para dar espacio a las columnas colaterales */
   max-width: 1200px;
   margin: 0 auto;
   font-family: sans-serif;
@@ -176,10 +203,8 @@ h2 {
   padding: 20px;
 }
 
-/* ⚡ TRANSFORMACIÓN DE LISTA A GRID RESPONSIVO */
 .lista-tickets {
   display: grid;
-  /* Calcula columnas automáticas de mínimo 280px para que entren de 3 a 4 por fila */
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
 }
@@ -191,7 +216,7 @@ h2 {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Empuja el bloque de acciones siempre al final de la tarjeta */
+  justify-content: space-between;
   gap: 15px;
   border: 1px solid #f0f0f0;
 }
@@ -232,31 +257,31 @@ h2 {
   padding: 3px 8px;
   border-radius: 12px;
   font-weight: bold;
-  margin-left: auto; /* Desplaza la etiqueta hacia el extremo derecho */
+  margin-left: auto;
 }
 
-/* 🏁 CONTENEDOR DE BOTONES HORIZONTALES */
+/* CONTENEDOR DE BOTONES EN HORIZONTAL (AJUSTADO PARA 3 BOTONES) */
 .ticket-acciones {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   margin-top: auto; 
 }
 
 .btn-accion {
-  flex: 1; /* Divide el espacio disponible equitativamente al 50% cada uno */
-  padding: 10px;
+  flex: 1; 
+  padding: 10px 4px;
   background-color: #ffffff;
   border: 1px solid #dcdcdc;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 12px; /* Un pelín más pequeña para que quepan cómodos los 3 botones */
   font-weight: bold;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
-  color: #000000 !important; /* Mantiene la visibilidad del texto en cualquier esquema */
+  color: #000000 !important;
 }
 
 .btn-accion:hover {
@@ -265,10 +290,76 @@ h2 {
   border-color: #0d47a1;
 }
 
-/* Destaca la acción final con un verde sutil al pasar el puntero */
+.btn-accion.btn-ticket:hover {
+  background-color: #f1c40f;
+  border-color: #f1c40f;
+  color: #000000 !important;
+}
+
 .btn-accion.btn-entregar:hover {
   background-color: #28a745;
   border-color: #28a745;
   color: #ffffff !important;
+}
+
+/* ESTILOS DEL NUEVO MODAL DEL VISOR PDF */
+.modal-pdf-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-pdf-contenido {
+  background-color: #ffffff;
+  width: 80%;
+  max-width: 750px;
+  height: 85vh;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-pdf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-pdf-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.btn-cerrar-modal {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #c0392b;
+}
+
+.modal-pdf-cuerpo {
+  flex: 1;
+  background-color: #525659; /* Fondo gris oscuro típico de visores de PDF */
+}
+
+.visor-pdf {
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 </style>
