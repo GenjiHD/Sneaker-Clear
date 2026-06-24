@@ -128,8 +128,9 @@ const mostrarModalTicket = ref(false)
 const urlTicketPDF = ref('')
 
 const obtenerOrdenes = async () => {
+alert("El .exe está intentando conectar a: " + urlAPI);
   try {
-    const respuesta = await fetch(`${urlAPI}/servicios/obtener`)
+    const respuesta = await fetch(`${urlAPI}/api/servicios/obtener`)
     if (respuesta.ok) {
       ordenes.value = await respuesta.json()
     }
@@ -174,7 +175,7 @@ const abrirEditor = (orden) => {
 }
 
 const verTicketPDF = (id) => {
-  urlTicketPDF.value = `${urlAPI}/servicios/ticket?id=${id}`
+  urlTicketPDF.value = `${urlAPI}/api/servicios/ticket?id=${id}`
   mostrarModalTicket.value = true
 }
 
@@ -188,7 +189,7 @@ const eliminarOrden = async (id) => {
   if (!confirmar) return
 
   try {
-    const respuesta = await fetch(`${urlAPI}/servicios/cambiarestado`, {
+    const respuesta = await fetch(`${urlAPI}/api/servicios/cambiarestado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: id })

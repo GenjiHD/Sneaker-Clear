@@ -118,7 +118,7 @@ const enviarFormulario = async () => {
   const urlAPI = import.meta.env.VITE_API_URL;
 
   try {
-    const respuesta = await fetch(`${urlAPI}/servicios/crear`, {
+    const respuesta = await fetch(`${urlAPI}/api/servicios/crear`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(nuevaOrden.value)

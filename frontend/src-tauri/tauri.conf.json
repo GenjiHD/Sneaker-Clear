@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "SneakerClean",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.joaquin.sneakerclear",
   "build": {
     "frontendDist": "../dist",
@@ -13,14 +13,15 @@
     "windows": [
       {
         "title": "Sneaker Cleaning Admin",
-        "width": 800,
-        "height": 600,
+        "width": 1200,
+        "height": 750,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "devtools": true 
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; connect-src 'self' https://sneaker-clear.onrender.com http://localhost:8080 tauri://localhost http://tauri.localhost;"
     }
   },
   "bundle": {

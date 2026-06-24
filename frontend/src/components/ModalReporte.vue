@@ -101,7 +101,7 @@ const cargarHistorial = async () => {
 
   cargando.value = true
   try {
-    let url = `${urlAPI}/servicios/obtener`
+    let url = `${urlAPI}/api/servicios/obtener`
     const params = new URLSearchParams()
     
     if (fechaDesde.value) params.append('desde', fechaDesde.value)

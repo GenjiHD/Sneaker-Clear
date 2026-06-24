@@ -37,9 +37,14 @@ func main() {
 	mux.HandleFunc("PUT /api/servicios/actualizar", handlers.EditarServicio)
 	mux.HandleFunc("GET /api/servicios/ticket", handlers.GenerarTicketPDFHandler)
 	mux.HandleFunc("GET /api/servicios/metricas", handlers.ObtenerMetricas)
-	// Configuracion de CORS
+
+	// CONFIGURACIÓN DE CORS CORREGIDA PARA TAURI
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"},
+		AllowedOrigins: []string{
+			"http://localhost:5173",  // Frontend en desarrollo web
+			"tauri://localhost",      // App de Tauri en producción (Windows/Linux)
+			"http://tauri.localhost", // Alternativa de origen interno de Tauri
+		},
 		AllowedMethods:   []string{"GET", "PUT", "DELETE", "POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,

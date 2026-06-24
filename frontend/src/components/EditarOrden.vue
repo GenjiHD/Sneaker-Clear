@@ -121,7 +121,7 @@ const guardarEdicion = async () => {
 
   guardando.value = true
   try {
-    const respuesta = await fetch(`${urlAPI}/servicios/actualizar`, {
+    const respuesta = await fetch(`${urlAPI}/api/servicios/actualizar`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value)
