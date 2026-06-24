@@ -18,7 +18,8 @@ type Servicios struct {
 	Estado       EstadoServicio `json:"estado"`
 	FechaPedido  time.Time      `json:"fecha_pedido"`
 	// Uso un puntero ya que go no maneja NULLs nativos
-	FechaEntrega *time.Time `json:"fecha_entrega"`
+	FechaEntrega  *time.Time `json:"fecha_entrega"`
+	Observaciones string     `json:"observaciones"`
 }
 
 type ServiciosDetalle struct {

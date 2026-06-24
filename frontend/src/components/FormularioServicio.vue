@@ -1,63 +1,89 @@
 <template>
-  <div class="tarjeta-formulario">
-    <h2>Nueva Orden</h2>
+  <div class="tarjeta-formulario-pro">
+    <h2 class="titulo-formulario">Nueva Orden</h2>
     
-    <form @submit.prevent="enviarFormulario">
-      <div class="grupo-input">
+    <form @submit.prevent="enviarFormulario" class="cuerpo-formulario">
+      <div class="grupo-input-pro">
+        <label class="etiqueta-pro">Cliente</label>
         <input 
           type="text" 
           v-model="nuevaOrden.nombre" 
           @input="validarNombre"
-          placeholder="Cliente (Solo letras)" 
+          placeholder="Nombre del cliente" 
+          class="control-input-pro"
           required
         />
       </div>
 
-      <div class="grupo-input">
+      <div class="grupo-input-pro">
+        <label class="etiqueta-pro">Teléfono</label>
         <input 
           type="text"
           v-model="nuevaOrden.telefono"
           @input="validarTelefono"
-          placeholder="Teléfono (10 dígitos)"
+          placeholder="6671234567"
           maxlength="10"
+          class="control-input-pro"
           required
         />
-        <small v-if="nuevaOrden.telefono.length > 0 && nuevaOrden.telefono.length < 10" class="error-texto">
+        <small v-if="nuevaOrden.telefono.length > 0 && nuevaOrden.telefono.length < 10" class="error-texto-pro">
           Faltan {{ 10 - nuevaOrden.telefono.length }} dígitos.
         </small>
       </div>
 
-      <div class="grupo-input">
+      <div class="grupo-input-pro">
+        <label class="etiqueta-pro">Marca / Modelo</label>
         <input 
           type="text" 
           v-model="nuevaOrden.modelo_marca" 
-          placeholder="Marca / Modelo" 
+          placeholder="Nike Air Force 1" 
+          class="control-input-pro"
           required
         />
       </div>
 
-      <div class="grupo-input">
-        <select v-model="nuevaOrden.tipo_servicio" required>
-          <option value="Lavado Básico">Lavado Básico</option>
-          <option value="Lavado Premium">Lavado Premium</option>
-          <option value="Blanqueado">Blanqueado</option>
-        </select>
+      <div class="grupo-input-pro">
+        <label class="etiqueta-pro">Servicio</label>
+        <div class="contenedor-select-pro">
+          <select v-model="nuevaOrden.tipo_servicio" class="control-select-pro" required>
+            <option value="Lavado Básico">Lavado Básico</option>
+            <option value="Lavado Premium">Lavado Premium</option>
+            <option value="Blanqueado">Blanqueado</option>
+          </select>
+        </div>
       </div>
 
-      <div class="grupo-input">
+      <div class="grupo-input-pro">
+        <label class="etiqueta-pro">Precio</label>
         <input 
           type="number" 
           v-model.number="nuevaOrden.precio" 
-          placeholder="Precio" 
+          placeholder="0" 
           min="0"
           step="1"
+          class="control-input-pro"
           required
         />
       </div>
 
-      <button type="submit" class="btn-guardar" :disabled="nuevaOrden.telefono.length !== 10">
-        Guardar Orden
-      </button>
+      <div class="grupo-input-pro">
+        <label class="etiqueta-pro">Notas</label>
+        <textarea 
+          v-model="nuevaOrden.observaciones" 
+          placeholder="Detalles del servicio"
+          rows="3"
+          class="control-textarea-pro"
+        ></textarea>
+      </div>
+
+      <div class="fila-botones-pro">
+        <button type="submit" class="btn-guardar-pro" :disabled="nuevaOrden.telefono.length !== 10">
+          Guardar Orden
+        </button>
+        <button type="button" class="btn-limpiar-pro" @click="limpiarFormulario">
+          Limpiar
+        </button>
+      </div>
     </form>
   </div>
 </template>
@@ -65,37 +91,28 @@
 <script setup>
 import { ref } from 'vue'
 
-// 1. 🚨 DEFINIMOS EL EMIT PARA CONFIGURAR EL EVENTO PERSONALIZADO
 const emit = defineEmits(['orden-creada'])
 
-// Estado del formulario
 const nuevaOrden = ref({
   nombre: '',
   telefono: '',
   modelo_marca: '',
   tipo_servicio: 'Lavado Básico', 
-  precio: null
+  precio: null,
+  observaciones: '' 
 })
 
-// Filtro para el nombre
 const validarNombre = () => {
   nuevaOrden.value.nombre = nuevaOrden.value.nombre.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '')
 }
 
-// Filtro para el teléfono
 const validarTelefono = () => {
   nuevaOrden.value.telefono = nuevaOrden.value.telefono.replace(/\D/g, '')
 }
 
 const enviarFormulario = async () => {
-  if (nuevaOrden.value.telefono.length !== 10) {
-    alert('El teléfono debe tener exactamente 10 dígitos.');
-    return;
-  }
-  if (nuevaOrden.value.precio === null || nuevaOrden.value.precio < 0) {
-    alert('El precio no puede ser menor a 0.');
-    return;
-  }
+  if (nuevaOrden.value.telefono.length !== 10) return;
+  if (nuevaOrden.value.precio === null || nuevaOrden.value.precio < 0) return;
 
   nuevaOrden.value.precio = parseFloat(nuevaOrden.value.precio);
   const urlAPI = import.meta.env.VITE_API_URL;
@@ -109,10 +126,7 @@ const enviarFormulario = async () => {
 
     if (respuesta.ok) {
       alert(`¡Orden de ${nuevaOrden.value.nombre} guardada con éxito!`);
-      
-      // 2. 🚀 LA ESTOCADA: Le gritamos a la pantalla principal que hay información nueva
       emit('orden-creada');
-      
       limpiarFormulario(); 
     } else {
       const errorServidor = await respuesta.text();
@@ -120,7 +134,7 @@ const enviarFormulario = async () => {
     }
   } catch (error) {
     console.error('Error de conexion con la API:', error);
-    alert('No se pudo conectar con el servidor. Verifica que Go esté encendido.');
+    alert('No se pudo conectar con el servidor.');
   }
 }
 
@@ -130,95 +144,175 @@ const limpiarFormulario = () => {
     telefono: '',
     modelo_marca: '',
     tipo_servicio: 'Lavado Básico', 
-    precio: null
+    precio: null,
+    observaciones: '' 
   }
 }
 </script>
 
 <style scoped>
-.tarjeta-formulario {
+/* Contenedor principal de la tarjeta izquierda */
+.tarjeta-formulario-pro {
   background: #ffffff;
-  color: #000000;
-  padding: 30px;
-  border-radius: 12px;
-  max-width: 600px;
-  margin: 0 auto 20px auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-  color: #000000;
-  font-size: 24px;
-  font-weight: bold;
-  margin-top: 0;
-  margin-bottom: 25px;
-}
-
-.grupo-input {
-  margin-bottom: 15px;
-}
-
-input, select {
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.01);
   width: 100%;
-  padding: 12px 15px;
-  font-size: 16px;
-  border: 1px solid #dcdcdc;
-  border-radius: 8px;
+  max-width: 400px; /* Ajustado para que mantenga la proporción esbelta de la captura */
   box-sizing: border-box;
+  border: 1px solid #f3f4f6;
+}
+
+/* Título superior h2 */
+.titulo-formulario {
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.cuerpo-formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* Espaciado uniforme entre bloques */
+}
+
+.grupo-input-pro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Estilo exacto de las etiquetas del prototipo */
+.etiqueta-pro {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+}
+
+/* Estilización global de los campos de texto y número */
+.control-input-pro,
+.control-textarea-pro,
+.control-select-pro {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-weight: 400;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background-color: #f8fafc; /* Color de fondo sutil característico */
+  color: #0f172a !important;
+  transition: all 0.2s ease;
+}
+
+/* Efecto focus limpio sin outlines toscos */
+.control-input-pro:focus,
+.control-textarea-pro:focus,
+.control-select-pro:focus {
+  outline: none;
+  border-color: #cbd5e1;
   background-color: #ffffff;
-  
-  /* 🍏 CORRECCIÓN: Asegura letras visibles sin importar el tema de NixOS/Hyprland */
-  color: #000000 !important;
 }
 
-input::placeholder {
-  color: #8e8e8e;
+/* Placeholders finos */
+.control-input-pro::placeholder,
+.control-textarea-pro::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
 }
 
-select {
-  background-color: #e9e9e9;
+/* Área de notas fija */
+.control-textarea-pro {
+  resize: none;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+/* Contenedor del select para la flecha personalizada */
+.contenedor-select-pro {
+  position: relative;
+  width: 100%;
+}
+
+.control-select-pro {
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M0 3l5 5 5-5z' fill='%23333'/></svg>");
+  padding-right: 36px;
+}
+
+/* Icono SVG de flecha hacia abajo idéntico al del prototipo */
+.contenedor-select-pro::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 6px;
   background-repeat: no-repeat;
-  background-position: right 15px center;
-  padding-right: 30px;
+  background-size: contain;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'><path d='M1 1L5 5L9 1' stroke='%23334155' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  pointer-events: none;
 }
 
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button { 
-  opacity: 1;
-}
-
-/* Letrero de aviso para dígitos faltantes */
-.error-texto {
-  color: #dc3545;
-  font-size: 12px;
+/* Texto de error para dígitos del teléfono */
+.error-texto-pro {
+  color: #ef4444;
+  font-size: 11px;
   font-weight: 500;
-  display: block;
-  margin-top: 4px;
+  margin-top: 1px;
 }
 
-.btn-guardar {
-  width: 100%;
-  padding: 14px;
-  background-color: #0d47a1; /* Cambiado a un azul primario para mejor contraste */
+/* Contenedor flex para botones alineados */
+.fila-botones-pro {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Botón principal Guardar Orden (Grande y oscuro) */
+.btn-guardar-pro {
+  flex: 1.8;
+  padding: 12px 16px;
+  background-color: #0f172a;
   color: #ffffff;
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.15s ease;
 }
 
-.btn-guardar:hover {
-  background-color: #0a357a;
+.btn-guardar-pro:hover {
+  background-color: #1e293b;
 }
 
-.btn-guardar:disabled {
-  background-color: #6c757d;
-  color: #ffffff;
+.btn-guardar-pro:disabled {
+  background-color: #cbd5e1;
+  color: #94a3b8;
   cursor: not-allowed;
+}
+
+/* Botón secundario Limpiar (Pequeño y gris intermedio) */
+.btn-limpiar-pro {
+  flex: 1;
+  padding: 12px 16px;
+  background-color: #334155;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-limpiar-pro:hover {
+  background-color: #475569;
 }
 </style>

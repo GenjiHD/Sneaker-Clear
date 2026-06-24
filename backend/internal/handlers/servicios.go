@@ -17,13 +17,14 @@ func RegistrarServicio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Estructura para recibir el JSON (Adaptada con nombre y telefono que manda Vue)
+	// Estructura para recibir el JSON (Añadido Observaciones)
 	var input struct {
-		Nombre       string  `json:"nombre"`
-		Telefono     string  `json:"telefono"`
-		TipoServicio string  `json:"tipo_servicio"`
-		ModeloMarca  string  `json:"modelo_marca"`
-		Precio       float64 `json:"precio"` // Cambiado a float64 para coincidir con tu struct Servicios
+		Nombre        string  `json:"nombre"`
+		Telefono      string  `json:"telefono"`
+		TipoServicio  string  `json:"tipo_servicio"`
+		ModeloMarca   string  `json:"modelo_marca"`
+		Precio        float64 `json:"precio"`
+		Observaciones string  `json:"observaciones"` // 👈 NUEVO CAMPO RECIBIDO DESDE VUE
 	}
 
 	// Decodificacion del JSON
@@ -36,7 +37,6 @@ func RegistrarServicio(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 👥 PASO 1: Buscar si el cliente existe por su teléfono, si no existe lo inserta en caliente
-	// Esta consulta atómica te regresa el UUID (id) correspondiente sin duplicar datos.
 	var clienteID string
 	queryCliente := `
         WITH existente AS (
@@ -58,17 +58,18 @@ func RegistrarServicio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 👟 PASO 2: Insertar la orden usando tu consulta original (Ligada al clienteID encontrado)
-	query := "insert into servicios(cliente_id, tipo_servicio, modelo_marca, precio, estado) values ($1, $2, $3, $4, $5) returning id"
+	// 👟 PASO 2: Insertar la orden incluyendo la columna observaciones ($6)
+	query := "insert into servicios(cliente_id, tipo_servicio, modelo_marca, precio, estado, observaciones) values ($1, $2, $3, $4, $5, $6) returning id"
 
 	var servicioID string
 	err = config.DB.QueryRow(
 		query,
-		clienteID, // 👈 Aquí inyectamos de forma segura el UUID obtenido en el paso anterior
+		clienteID,
 		input.TipoServicio,
 		input.ModeloMarca,
 		input.Precio,
 		models.EstadoProceso,
+		input.Observaciones, // 👈 ENVIADO A LA BASE DE DATOS
 	).Scan(&servicioID)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -223,12 +224,13 @@ func EditarServicio(w http.ResponseWriter, r *http.Request) {
 
 	// Estructura para capturar los datos editados desde el frontend
 	var input struct {
-		ID           string  `json:"id"`
-		Nombre       string  `json:"nombre"`
-		Telefono     string  `json:"telefono"`
-		TipoServicio string  `json:"tipo_servicio"`
-		ModeloMarca  string  `json:"modelo_marca"`
-		Precio       float64 `json:"precio"`
+		ID            string  `json:"id"`
+		Nombre        string  `json:"nombre"`
+		Telefono      string  `json:"telefono"`
+		TipoServicio  string  `json:"tipo_servicio"`
+		ModeloMarca   string  `json:"modelo_marca"`
+		Precio        float64 `json:"precio"`
+		Observaciones string  `json:"observaciones"` // 👈 NUEVO CAMPO ACEPTADO EN LA EDICIÓN
 	}
 
 	// Decodificar el JSON entrante
@@ -240,7 +242,7 @@ func EditarServicio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Qeury a la base de datos
+	// Query a la base de datos con transacción
 	tx, err := config.DB.Begin()
 	if err != nil {
 		http.Error(w, "Error al iniciar la transaccion: "+err.Error(), http.StatusInternalServerError)
@@ -263,13 +265,13 @@ func EditarServicio(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// ACTUALIZAR LA TABLA DE SERVICIOS
-	// Actualizamos los detalles del calzado y el cobro
+	// Agregamos observaciones al SET ($4) y recorremos el ID al parámetro $5
 	queryServicio := `
         UPDATE servicios 
-        SET tipo_servicio = $1, modelo_marca = $2, precio = $3 
-        WHERE id = $4
+        SET tipo_servicio = $1, modelo_marca = $2, precio = $3, observaciones = $4 
+        WHERE id = $5
     `
-	_, err = tx.Exec(queryServicio, input.TipoServicio, input.ModeloMarca, input.Precio, input.ID)
+	_, err = tx.Exec(queryServicio, input.TipoServicio, input.ModeloMarca, input.Precio, input.Observaciones, input.ID)
 	if err != nil {
 		http.Error(w, "Error al actualizar los datos del servicio: "+err.Error(), http.StatusInternalServerError)
 		return

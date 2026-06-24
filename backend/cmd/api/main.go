@@ -36,6 +36,7 @@ func main() {
 	mux.HandleFunc("PUT /api/servicios/cambiarestado", handlers.CambiarEstado)
 	mux.HandleFunc("PUT /api/servicios/actualizar", handlers.EditarServicio)
 	mux.HandleFunc("GET /api/servicios/ticket", handlers.GenerarTicketPDFHandler)
+	mux.HandleFunc("GET /api/servicios/metricas", handlers.ObtenerMetricas)
 	// Configuracion de CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"},
