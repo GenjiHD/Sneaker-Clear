@@ -21,7 +21,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; connect-src 'self' https://sneaker-clear.onrender.com http://localhost:8080 tauri://localhost http://tauri.localhost;"
+      "csp": "default-src 'self'; connect-src 'self' https://sneaker-clear.onrender.com http://localhost:8080 tauri://localhost http://tauri.localhost; frame-src 'self' https://sneaker-clear.onrender.com; object-src 'self' https://sneaker-clear.onrender.com;"
     }
   },
   "bundle": {

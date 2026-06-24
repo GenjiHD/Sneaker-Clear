@@ -128,7 +128,6 @@ const mostrarModalTicket = ref(false)
 const urlTicketPDF = ref('')
 
 const obtenerOrdenes = async () => {
-alert("El .exe está intentando conectar a: " + urlAPI);
   try {
     const respuesta = await fetch(`${urlAPI}/api/servicios/obtener`)
     if (respuesta.ok) {
